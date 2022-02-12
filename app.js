@@ -15,6 +15,7 @@ let accountInfo = {
 
 //local state
 //intermediary -> history -> account - use and dump
+//search -> find -> update (from--, to++) - this search operation is mediocre (should-ve been done via email - multiple accounts might share the same name.)
 // let toBeUpdated = {
 //   to_ID : '',
 //   from_ID : ''
@@ -26,7 +27,7 @@ const setState = (type, payload) => {
 		triggerAccountRender();
 	}
 
-	if (type === 'ADD_TRANSACTION_HISTORY') {
+	if (type === 'ADD_TRANSACTION') {
 		// triggerHistoryRender();
 		// triggerAccountRender();
 	}
@@ -42,7 +43,7 @@ const triggerAccountRender = () => {
 	const generateAccountDOM = (id, name, balance) => {
 		const li = document.createElement('li');
 		li.dataset.id = id;
-		li.textContent = `Name: ${name} - Balance: ${balance}`;
+		li.innerHTML = `<span id="acc-name">${name}</span><span class="acc-balance">$${balance}</span>`;
 
 		return li;
 	};
@@ -57,13 +58,29 @@ const triggerRender = () => {
 };
 
 const accountForm = document.querySelector('.add-user');
+const addAccountBtn = document
+	.querySelector('.add-user')
+	.querySelector('button');
 
 const handleAccountSubmit = (e) => {
 	e.preventDefault();
 	accountInfo.id = new Date().getTime().toString().slice(0, 10);
-	setState('ADD_ACCOUNT', accountInfo);
+
+	const isUser = (function () {
+		return globalState.accountState.find(
+			(acc) => acc.name === accountInfo.name
+		);
+	})();
+
+	if (isUser) {
+		alert(`Account with the name(email) ${accountInfo.name} already exists`);
+	} else {
+		setState('ADD_ACCOUNT', accountInfo);
+	}
+
 	accountInfo = {};
-	Array.from(e.target.children).forEach((v) => (v.value = ''));
+	addAccountBtn.disabled = true;
+	Array.from(e.target.children).forEach((input) => (input.value = ''));
 };
 
 const handleAccountChange = (e) => {
@@ -72,7 +89,25 @@ const handleAccountChange = (e) => {
 	if (e.target.name === 'account-name') {
 		accountInfo.name = e.target.value;
 	} else {
+		if (
+			+e.target.value < 0 ||
+			e.target.value.startsWith('-') ||
+			e.target.value.startsWith('00')
+		) {
+			e.target.value = '';
+			return;
+		}
 		accountInfo.balance = +e.target.value;
+		if (!accountInfo.balance) {
+			e.target.value = '';
+			return;
+		}
+	}
+
+	if (accountInfo.name.length > 5 && accountInfo.balance > 0) {
+		addAccountBtn.disabled = false;
+	} else {
+		addAccountBtn.disabled = true;
 	}
 
 	console.log(accountInfo);

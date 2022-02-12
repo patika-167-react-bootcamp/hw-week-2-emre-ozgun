@@ -13,25 +13,31 @@
 			<form class="add-user">
 				<input type="text" name="account-name" placeholder="Full Name" />
 				<input
-					type="number"
+					type="text"
 					name="account-balance"
-					placeholder="Account Balance"
+					placeholder="Initial Balance"
 				/>
-				<button type="submit">Add Account</button>
+				<button type="submit" disabled>Add Account</button>
+				<!-- ADD ACOUNT ICON - POSITION LEFT -->
 			</form>
 			<form class="add-transaction">
 				<input type="text" placeholder="From" name="from" />
 				<input type="to" placeholder="To" name="to" />
-				<input type="number" placeholder="Amount" name="amount" />
+				<input type="text" placeholder="Amount" name="amount" />
 
 				<button type="submit">send</button>
+				<!-- ADD TRANSACTION ICON - POSITION LEFT -->
 			</form>
-			<ul class="account-list">
-				<h1>account list</h1>
-			</ul>
-			<ul class="transaction-list">
-				<h1>transaction history</h1>
-			</ul>
+			<section class="account-section">
+				<h3>account list</h3>
+				<ul class="account-list">
+					<li><span>Emre Ozgun</span><span>$9000</span></li>
+				</ul>
+			</section>
+			<section class="transaction-section">
+				<h3>transaction history</h3>
+				<ul class="transaction-list"></ul>
+			</section>
 		</main>
 	</body>
 </html>

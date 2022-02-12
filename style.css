@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@200;300;400;500&display=swap');
 
 body {
 	min-height: 100vh;
@@ -34,7 +34,7 @@ main > form {
 	font-family: inherit;
 	background-color: #fff;
 
-	/* border: 1px solid rgba(34, 34, 34, 0.1); */
+	border: 1px solid #fff;
 	box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
 	padding: 2rem;
 	border-radius: var(--radius);
@@ -55,6 +55,11 @@ form > input {
 	-ms-border-radius: var(--radius);
 	-o-border-radius: var(--radius);
 	font-family: inherit;
+	font-weight: 500;
+}
+
+form:hover {
+	box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 form > input:hover {
@@ -86,3 +91,40 @@ button {
 button:hover {
 	opacity: 0.9;
 }
+
+button[disabled='disabled'],
+button:disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
+}
+
+section h3 {
+	text-transform: capitalize;
+	letter-spacing: 1px;
+	margin: 0.5rem 0;
+}
+
+li {
+	list-style-type: none;
+}
+
+/* account list */
+
+.account-list > li {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid #eee;
+	margin-bottom: 0.5rem;
+	padding: 0.25rem 0;
+}
+.account-list > li > span:first-child {
+	flex: 4;
+	font-size: 0.9rem;
+}
+.account-list > li > span:last-child {
+	flex: 3;
+	font-weight: 500;
+}
+
+/* end of account list */
