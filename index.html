@@ -9,6 +9,29 @@
 		<script src="./app.js" defer></script>
 	</head>
 	<body>
-		<h1>Test</h1>
+		<main class="container">
+			<form class="add-user">
+				<input type="text" name="account-name" placeholder="Full Name" />
+				<input
+					type="number"
+					name="account-balance"
+					placeholder="Account Balance"
+				/>
+				<button type="submit">Add Account</button>
+			</form>
+			<form class="add-transaction">
+				<input type="text" placeholder="From" name="from" />
+				<input type="to" placeholder="To" name="to" />
+				<input type="number" placeholder="Amount" name="amount" />
+
+				<button type="submit">send</button>
+			</form>
+			<ul class="account-list">
+				<h1>account list</h1>
+			</ul>
+			<ul class="transaction-list">
+				<h1>transaction history</h1>
+			</ul>
+		</main>
 	</body>
 </html>
