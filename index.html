@@ -21,18 +21,41 @@
 				<!-- ADD ACOUNT ICON - POSITION LEFT -->
 			</form>
 			<form class="add-transaction">
-				<input type="text" placeholder="From" name="from" />
-				<input type="to" placeholder="To" name="to" />
-				<input type="text" placeholder="Amount" name="amount" />
+				<div class="transaction-cta">
+					<button type="button" id="from-btn">From</button>
 
-				<button type="submit">send</button>
+					<button type="button" id="to-btn">To</button>
+				</div>
+				<div class="transaction-cta results" id="transaction-results">
+					<button type="button" id="result-from"></button>
+
+					<button type="button" id="result-to"></button>
+				</div>
+
+				<input
+					id="transaction-amount"
+					type="text"
+					placeholder="Amount"
+					name="amount"
+				/>
+
+				<button id="transaction-submit" type="submit" disabled>send</button>
 				<!-- ADD TRANSACTION ICON - POSITION LEFT -->
+				<div class="search-account">
+					<div class="search-input-div">
+						<input
+							id="search-input"
+							type="text"
+							placeholder="FROM: Search Account"
+						/>
+						<button type="button" id="close-search">X</button>
+					</div>
+					<ul class="search-results"></ul>
+				</div>
 			</form>
 			<section class="account-section">
 				<h3>account list</h3>
-				<ul class="account-list">
-					<li><span>Emre Ozgun</span><span>$9000</span></li>
-				</ul>
+				<ul class="account-list"></ul>
 			</section>
 			<section class="transaction-section">
 				<h3>transaction history</h3>

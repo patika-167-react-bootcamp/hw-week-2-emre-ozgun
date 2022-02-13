@@ -20,10 +20,11 @@ body {
 
 main {
 	width: 100%;
-	max-width: 300px;
+	max-width: 450px;
 	height: 100%;
 	flex-direction: column;
 	justify-content: center;
+	padding: 1rem;
 }
 
 main > form {
@@ -128,3 +129,110 @@ li {
 }
 
 /* end of account list */
+
+/* transaction list */
+
+.transaction-cta {
+	display: flex;
+}
+
+.transaction-cta > button {
+	display: inline-block;
+	justify-self: center;
+	margin: 0;
+	background-color: transparent;
+	color: #222;
+	border: 1px solid rgba(34, 34, 34, 0.1);
+	flex: 1;
+}
+
+.transaction-cta.results > button {
+	text-transform: capitalize;
+	font-size: 9px;
+	cursor: default;
+	padding: 0.1rem 0.05rem;
+}
+
+.add-transaction {
+	position: relative;
+}
+
+/* search from -> to */
+
+.search-account {
+	display: none;
+	/* display: block; */
+}
+
+.search-account {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #fafafa;
+	overflow-y: scroll;
+}
+.search-input-div {
+	background-color: #fff;
+	position: sticky;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.search-input-div > button {
+	margin: 0;
+	border-radius: 0;
+	border: 0px solid #222;
+	padding: 0.469rem 1rem;
+	-webkit-border-radius: 0;
+	-moz-border-radius: 0;
+	-ms-border-radius: 0;
+	-o-border-radius: 0;
+	opacity: 0.8;
+}
+
+#search-input {
+	outline: none;
+	border: none;
+	width: 100%;
+	padding: 0.5rem 1rem;
+	padding-left: 0.25rem;
+	letter-spacing: 1px;
+	background-color: #eee;
+}
+
+.search-results > li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid #eee;
+	padding-left: 0.25rem;
+	cursor: pointer;
+	font-size: 12px;
+}
+.search-results > li:hover {
+	background-color: rgba(238, 238, 238, 0.25);
+}
+
+#transaction-amount {
+	display: none;
+}
+#transaction-results {
+	display: none;
+}
+
+.transaction-list > li {
+	padding: 0.5rem 0;
+	border-bottom: 1px solid #eee;
+	font-size: 12px;
+}
+
+/* end of transaction list */
+
+section {
+	padding: 2rem;
+	background-color: #fff;
+}
