@@ -159,8 +159,6 @@ accountForm.addEventListener('keyup', handleAccountChange);
 
 const transactionForm = document.querySelector('.add-transaction');
 
-const searchAccount = transactionForm.querySelector('.search-account');
-
 const clearTransactionForm = () => {
 	transactionInfo = {
 		from: { id: '', name: '' },
@@ -178,21 +176,6 @@ const clearTransactionForm = () => {
 const handleTransactionSubmit = () => {
 	setState('ADD_TRANSACTION', transactionInfo);
 	clearTransactionForm();
-};
-
-const fetchSearchResults = () => {
-	let li = '';
-	if (globalState.accountState.length < 1) {
-		li = `<li>Your account list is currently empty, consider adding an account.</li>`;
-	} else {
-		globalState.accountState.forEach(
-			({ id, name }) =>
-				(li += `
-			<li data-id="${id}">${formatName(name)}</li>`)
-		);
-	}
-
-	return li;
 };
 
 const resultFrom = document.querySelector('#result-from');
@@ -215,7 +198,7 @@ const shouldAmountBeDisplayed = () => {
 		document.querySelector('#transaction-amount').style.display = 'block';
 		document.querySelector(
 			'#transaction-amount'
-		).placeholder = `Amount [max $(${formatPrice(maxAmount)})]`;
+		).placeholder = `Amount [Balance: ${formatPrice(maxAmount)}]`;
 	} else {
 		document.querySelector('#transaction-amount').style.display = 'none';
 	}
@@ -252,6 +235,21 @@ const makeSelection = (e) => {
 const listenTransactionSelection = () => {
 	const transactionResults = document.querySelector('.search-results');
 	transactionResults.addEventListener('click', makeSelection);
+};
+
+const fetchSearchResults = () => {
+	let li = '';
+	if (globalState.accountState.length < 1) {
+		li = `<li>Account list is currently empty, consider adding an account.</li>`;
+	} else {
+		globalState.accountState.forEach(
+			({ id, name }) =>
+				(li += `
+			<li data-id="${id}">${formatName(name)}</li>`)
+		);
+	}
+
+	return li;
 };
 
 const updateTransactionSearch = () => {
