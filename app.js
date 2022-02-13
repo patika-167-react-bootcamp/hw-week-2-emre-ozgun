@@ -1,3 +1,8 @@
+import { formatName, formatPrice } from './utils.js';
+
+// console.log(formatName('emre murat ozgun JR'));
+// console.log(formatPrice(Number('2500')));
+
 const globalState = {
 	accountState: [],
 	historyState: [],
@@ -50,7 +55,11 @@ const updateBalance = (transactionInfo) => {
 };
 
 const updateHistory = (transactionInfo) => {
-	transactionHistory = `${transactionInfo.from.name} sent $${transactionInfo.amount} to ${transactionInfo.to.name}`;
+	transactionHistory = `${formatName(
+		transactionInfo.from.name
+	)} sent ${formatPrice(transactionInfo.amount)} to ${formatName(
+		transactionInfo.to.name
+	)}`;
 	globalState.historyState = [...globalState.historyState, transactionHistory];
 	transactionHistory = '';
 };
@@ -63,8 +72,8 @@ const triggerAccountRender = () => {
 		const li = document.createElement('li');
 		li.dataset.id = id;
 		li.innerHTML = `
-    <span id="acc-name">${name}</span>
-    <span class="acc-balance">$${balance}</span>
+    <span id="acc-name">${formatName(name)}</span>
+    <span class="acc-balance">${formatPrice(balance)}</span>
     `;
 
 		return li;
@@ -83,7 +92,7 @@ const triggerHistoryRender = () => {
 		let historyLi = document.createElement('li');
 		historyLi.classList.add = 'transaction-list-item';
 		historyLi.innerText = history;
-		transactionHistoryList.append(historyLi);
+		transactionHistoryList.prepend(historyLi);
 	});
 };
 
@@ -179,7 +188,7 @@ const fetchSearchResults = () => {
 		globalState.accountState.forEach(
 			({ id, name }) =>
 				(li += `
-			<li data-id="${id}">${name}</li>`)
+			<li data-id="${id}">${formatName(name)}</li>`)
 		);
 	}
 
@@ -206,7 +215,7 @@ const shouldAmountBeDisplayed = () => {
 		document.querySelector('#transaction-amount').style.display = 'block';
 		document.querySelector(
 			'#transaction-amount'
-		).placeholder = `Amount [max $(${maxAmount})]`;
+		).placeholder = `Amount [max $(${formatPrice(maxAmount)})]`;
 	} else {
 		document.querySelector('#transaction-amount').style.display = 'none';
 	}

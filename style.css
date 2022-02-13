@@ -227,7 +227,7 @@ li {
 .transaction-list > li {
 	padding: 0.5rem 0;
 	border-bottom: 1px solid #eee;
-	font-size: 12px;
+	font-size: 14px;
 }
 
 /* end of transaction list */
