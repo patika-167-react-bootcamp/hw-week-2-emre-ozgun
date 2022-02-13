@@ -230,6 +230,10 @@ li {
 	font-size: 14px;
 }
 
+.account-list > li {
+	font-size: 14px;
+}
+
 /* end of transaction list */
 
 section {
