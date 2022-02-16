@@ -20,6 +20,50 @@ let transactionInfo = {
 //local history state
 let transactionHistory = '';
 
+// load dom elements and event listeners (globally, in one place)
+let accountList,
+	accountForm,
+	addAccountBtn,
+	transactionForm,
+	transactionHistoryList,
+	addTransactionBtn,
+	transactionAmount,
+	transactionResults,
+	resultFrom,
+	resultTo,
+	searchAccount,
+	searchResults;
+
+window.addEventListener('DOMContentLoaded', () => {
+	//**Pertaining to account list**
+
+	// DOM Elements
+	accountList = document.querySelector('.account-list');
+	accountForm = document.querySelector('.add-user');
+	addAccountBtn = document.querySelector('.add-user').querySelector('button');
+
+	// EVENT Listeners
+	accountForm.addEventListener('submit', handleAccountSubmit);
+	accountForm.addEventListener('keyup', handleAccountChange);
+
+	//**Pertaining to transactions**
+	transactionHistoryList = document.querySelector('.transaction-list');
+	transactionForm = document.querySelector('.add-transaction');
+	addTransactionBtn = document.querySelector('#transaction-submit');
+	transactionAmount = document.querySelector('#transaction-amount');
+	transactionResults = document.querySelector('#transaction-results');
+	resultFrom = document.querySelector('#result-from');
+	resultTo = document.querySelector('#result-to');
+
+	transactionForm.addEventListener('click', locateTransactionEvent);
+	transactionAmount.addEventListener('keyup', handleTransactionAmount);
+
+	searchAccount = document.querySelector('.search-account');
+	searchResults = document.querySelector('.search-results');
+
+	searchResults.addEventListener('click', makeSelection);
+});
+
 const setState = (type, payload) => {
 	if (type === 'ADD_ACCOUNT') {
 		globalState.accountState = [...globalState.accountState, payload];
@@ -45,8 +89,6 @@ const updateBalance = (transactionInfo) => {
 		}
 		return account;
 	});
-
-	console.log(globalState);
 };
 
 const updateHistory = (transactionInfo) => {
@@ -60,7 +102,6 @@ const updateHistory = (transactionInfo) => {
 };
 
 const triggerAccountRender = () => {
-	const accountList = document.querySelector('.account-list');
 	accountList.innerHTML = '';
 
 	const generateAccountDOM = (id, name, balance) => {
@@ -80,7 +121,6 @@ const triggerAccountRender = () => {
 };
 
 const triggerHistoryRender = () => {
-	const transactionHistoryList = document.querySelector('.transaction-list');
 	transactionHistoryList.innerHTML = '';
 
 	globalState.historyState.forEach((history) => {
@@ -90,11 +130,6 @@ const triggerHistoryRender = () => {
 		transactionHistoryList.prepend(historyLi);
 	});
 };
-
-const accountForm = document.querySelector('.add-user');
-const addAccountBtn = document
-	.querySelector('.add-user')
-	.querySelector('button');
 
 const handleAccountSubmit = (e) => {
 	e.preventDefault();
@@ -143,27 +178,19 @@ const handleAccountChange = (e) => {
 	} else {
 		addAccountBtn.disabled = true;
 	}
-
-	// console.log(accountInfo);
 };
 
-accountForm.addEventListener('submit', handleAccountSubmit);
-accountForm.addEventListener('keyup', handleAccountChange);
-
 // TRANSACTIONS
-
-const transactionForm = document.querySelector('.add-transaction');
-
 const clearTransactionForm = () => {
 	transactionInfo = {
 		from: { id: '', name: '' },
 		to: { id: '', name: '' },
 		amount: 0,
 	};
-	document.querySelector('#transaction-submit').disabled = true;
-	document.querySelector('#transaction-amount').style.display = 'none';
-	document.querySelector('#transaction-amount').value = '';
-	document.querySelector('#transaction-results').style.display = 'none';
+	addTransactionBtn.disabled = true;
+	transactionAmount.style.display = 'none';
+	transactionAmount.value = '';
+	transactionResults.style.display = 'none';
 	updateTransactionInfo();
 	shouldAmountBeDisplayed();
 };
@@ -173,16 +200,11 @@ const handleTransactionSubmit = () => {
 	clearTransactionForm();
 };
 
-const resultFrom = document.querySelector('#result-from');
-const resultTo = document.querySelector('#result-to');
-
 const updateTransactionInfo = () => {
 	resultFrom.innerText = transactionInfo.from.name;
 	resultTo.innerText = transactionInfo.to.name;
 	transactionForm.querySelector('.search-account').style.display = 'none';
 	document.querySelector('.search-results').classList = 'search-results';
-
-	console.log(transactionInfo);
 };
 
 const shouldAmountBeDisplayed = () => {
@@ -190,12 +212,12 @@ const shouldAmountBeDisplayed = () => {
 		const maxAmount = globalState.accountState.find(
 			(user) => user.id === transactionInfo.from.id
 		).balance;
-		document.querySelector('#transaction-amount').style.display = 'block';
-		document.querySelector(
-			'#transaction-amount'
-		).placeholder = `Amount [Balance: ${formatPrice(maxAmount)}]`;
+		transactionAmount.style.display = 'block';
+		transactionAmount.placeholder = `Amount [Balance: ${formatPrice(
+			maxAmount
+		)}]`;
 	} else {
-		document.querySelector('#transaction-amount').style.display = 'none';
+		transactionAmount.style.display = 'none';
 	}
 };
 
@@ -221,15 +243,8 @@ const makeSelection = (e) => {
 		document.querySelector('#transaction-results').style.display = 'flex';
 	}
 
-	console.log(transactionInfo);
-
 	updateTransactionInfo();
 	shouldAmountBeDisplayed();
-};
-
-const listenTransactionSelection = () => {
-	const transactionResults = document.querySelector('.search-results');
-	transactionResults.addEventListener('click', makeSelection);
 };
 
 const fetchSearchResults = () => {
@@ -243,13 +258,11 @@ const fetchSearchResults = () => {
 			<li data-id="${id}">${formatName(name)}</li>`)
 		);
 	}
-
 	return li;
 };
 
 const updateTransactionSearch = () => {
-	transactionForm.querySelector('.search-results').innerHTML =
-		fetchSearchResults();
+	searchResults.innerHTML = fetchSearchResults();
 };
 
 const displaySearchResults = (identifier) => {
@@ -257,66 +270,55 @@ const displaySearchResults = (identifier) => {
 
 	if (identifier === 'from') {
 		searchIdentifier.placeholder = 'SENDER: Search Account';
-		document.querySelector('.search-results').classList.add('from');
+		searchResults.classList.add('from');
 	} else {
 		searchIdentifier.placeholder = 'RECEIVER: Search Account';
-		document.querySelector('.search-results').classList.add('to');
+		searchResults.classList.add('to');
 	}
 
 	updateTransactionSearch();
-	transactionForm.querySelector('.search-account').style.display = 'block';
-	listenTransactionSelection();
+	searchAccount.style.display = 'block';
 };
 
 const locateTransactionEvent = (e) => {
 	if (e.target.id === 'from-btn') {
 		displaySearchResults('from');
 	}
-
 	if (e.target.id === 'to-btn') {
 		displaySearchResults('to');
 	}
-
 	if (e.target.id === 'close-search') {
-		transactionForm.querySelector('.search-account').style.display = 'none';
-		document.querySelector('.search-results').classList = 'search-results';
+		searchAccount.style.display = 'none';
+		searchResults.classList = 'search-results';
 	}
-
 	if (e.target.id === 'transaction-submit') {
 		e.preventDefault();
 		handleTransactionSubmit();
 	}
+	return;
 };
 
-transactionForm.addEventListener('click', locateTransactionEvent);
-transactionForm
-	.querySelector('#transaction-amount')
-	.addEventListener('keyup', (e) => {
-		const maxBalance = globalState.accountState.find(
-			(user) => user.id === transactionInfo.from.id
-		).balance;
+const handleTransactionAmount = (e) => {
+	const maxBalance = globalState.accountState.find(
+		(user) => user.id === transactionInfo.from.id
+	).balance;
 
-		if (+e.target.value > maxBalance) {
-			e.target.value = maxBalance;
-		}
-		if (
-			+e.target.value < 0 ||
-			e.target.value.startsWith('-') ||
-			e.target.value.startsWith('00')
-		) {
-			e.target.value = '';
-			return;
-		}
-		transactionInfo.amount = +e.target.value;
+	if (+e.target.value > maxBalance) {
+		e.target.value = maxBalance;
+	}
+	if (
+		+e.target.value < 0 ||
+		e.target.value.startsWith('-') ||
+		e.target.value.startsWith('00')
+	) {
+		e.target.value = '';
+		return;
+	}
+	transactionInfo.amount = +e.target.value;
 
-		if (transactionInfo.amount > 0 && transactionInfo.amount <= maxBalance) {
-			document.querySelector('#transaction-submit').disabled = false;
-		} else {
-			document.querySelector('#transaction-submit').disabled = true;
-		}
-	});
-
-// window.addEventListener('DOMContentLoader', () => {
-// 	loadDomElements();
-// 	loadEventListeners();
-// })
+	if (transactionInfo.amount > 0 && transactionInfo.amount <= maxBalance) {
+		addTransactionBtn.disabled = false;
+	} else {
+		addTransactionBtn.disabled = true;
+	}
+};
