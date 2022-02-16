@@ -1,22 +1,3 @@
-//simple utils functions
-const formatPrice = (price) => {
-	return price.toLocaleString('en-US', {
-		style: 'currency',
-		currency: 'USD',
-	});
-};
-
-const formatName = (strName) => {
-	const str = strName.split(' ');
-
-	const capitalized = str.map((s) => s.charAt(0).toUpperCase() + s.slice(1));
-
-	return capitalized.join(' ');
-};
-
-// console.log(formatName('emre murat ozgun JR'));
-// console.log(formatPrice(Number('2500')));
-
 const globalState = {
 	accountState: [],
 	historyState: [],
@@ -334,3 +315,8 @@ transactionForm
 			document.querySelector('#transaction-submit').disabled = true;
 		}
 	});
+
+// window.addEventListener('DOMContentLoader', () => {
+// 	loadDomElements();
+// 	loadEventListeners();
+// })
