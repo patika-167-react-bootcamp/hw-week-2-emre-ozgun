@@ -134,10 +134,34 @@ li {
 .account-list > li > span:first-child {
 	flex: 4;
 	font-size: 0.9rem;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.2rem;
+	/* margin-bottom: 0.1rem; */
 }
 .account-list > li > span:last-child {
 	flex: 3;
 	font-weight: 500;
+}
+.account-list > li:hover #remove-account-btn {
+	display: inline-flex;
+}
+
+#remove-account-btn {
+	display: none;
+	justify-content: center;
+	align-items: center;
+	background-color: #333259;
+	font-size: 9px;
+	height: 13px;
+	width: 13px;
+	border-radius: 50%;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	-ms-border-radius: 50%;
+	-o-border-radius: 50%;
+	color: #eee;
+	cursor: pointer;
 }
 
 /* end of account list */
@@ -242,6 +266,11 @@ li {
 }
 #transaction-results {
 	display: none;
+}
+
+#close-search {
+	border-top-right-radius: var(--radius);
+	border-bottom-right-radius: var(--radius);
 }
 
 .transaction-list > li {

@@ -1,6 +1,7 @@
 const globalState = {
 	accountState: [],
 	historyState: [],
+	transactionState: [],
 };
 
 //local account state
@@ -15,6 +16,7 @@ let transactionInfo = {
 	from: { id: '', name: '' },
 	to: { id: '', name: '' },
 	amount: 0,
+	transactionId: '',
 };
 
 //local history state
@@ -45,6 +47,7 @@ window.addEventListener('DOMContentLoaded', () => {
 	// EVENT Listeners
 	accountForm.addEventListener('submit', handleAccountSubmit);
 	accountForm.addEventListener('keyup', handleAccountChange);
+	accountList.addEventListener('click', removeAccount);
 
 	//**Pertaining to transactions**
 	transactionHistoryList = document.querySelector('.transaction-list');
@@ -71,11 +74,23 @@ const setState = (type, payload) => {
 		updateTransactionSearch();
 	}
 
+	if (type === 'REMOVE_ACCOUNT') {
+		globalState.accountState = globalState.accountState.filter(
+			(acc) => acc.id !== payload
+		);
+		triggerAccountRender();
+		updateTransactionSearch();
+	}
+
 	if (type === 'ADD_TRANSACTION') {
 		updateBalance(payload);
 		updateHistory(payload);
 		triggerAccountRender();
 		triggerHistoryRender();
+	}
+
+	if (type === 'REVOKE_TRANSACTION') {
+		// reject IF user not found!
 	}
 };
 
@@ -108,7 +123,10 @@ const triggerAccountRender = () => {
 		const li = document.createElement('li');
 		li.dataset.id = id;
 		li.innerHTML = `
-    <span id="acc-name">${formatName(name)}</span>
+		
+    <span id="acc-name"><span id="remove-account-btn">X</span>${formatName(
+			name
+		)} </span>
     <span class="acc-balance">${formatPrice(balance)}</span>
     `;
 
@@ -133,7 +151,7 @@ const triggerHistoryRender = () => {
 
 const handleAccountSubmit = (e) => {
 	e.preventDefault();
-	accountInfo.id = new Date().getTime().toString().slice(0, 10);
+	accountInfo.id = generateId();
 
 	const isUser = (function () {
 		return globalState.accountState.find(
@@ -322,3 +340,19 @@ const handleTransactionAmount = (e) => {
 		addTransactionBtn.disabled = true;
 	}
 };
+
+const removeAccount = (e) => {
+	// make use of event delegation to remove account
+	console.log('true');
+	if (e.target.id === 'remove-account-btn') {
+		const accountToBeRemoved = e.target.parentElement.parentElement.dataset.id;
+		setState('REMOVE_ACCOUNT', accountToBeRemoved);
+
+		//get user id from parent.dataset.id and filter globalState.accountState and re-render!
+	} else {
+		return;
+	}
+};
+
+// remove account
+// revoke transaction
