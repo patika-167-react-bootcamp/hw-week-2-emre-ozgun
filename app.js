@@ -19,10 +19,10 @@ let transactionInfo = {
 	transactionId: '',
 };
 
-//local history state
+//local history state (account creation and deletion)
 let transactionHistory = '';
 
-// load dom elements and event listeners (globally, in one place)
+// load dom elements and event listeners
 let accountList,
 	accountForm,
 	addAccountBtn,
@@ -65,54 +65,101 @@ window.addEventListener('DOMContentLoaded', () => {
 	searchResults = document.querySelector('.search-results');
 
 	searchResults.addEventListener('click', makeSelection);
+	transactionHistoryList.addEventListener('click', revokeTransaction);
 });
 
 const setState = (type, payload) => {
 	if (type === 'ADD_ACCOUNT') {
 		globalState.accountState = [...globalState.accountState, payload];
-		triggerAccountRender();
-		updateTransactionSearch();
+		updateHistory(payload, 'account-creation');
 	}
 
 	if (type === 'REMOVE_ACCOUNT') {
+		const accountToBeRemoved = globalState.accountState.find(
+			(acc) => acc.id === payload
+		);
+
 		globalState.accountState = globalState.accountState.filter(
 			(acc) => acc.id !== payload
 		);
-		triggerAccountRender();
-		updateTransactionSearch();
+
+		updateHistory(accountToBeRemoved, 'account-deletion');
 	}
 
 	if (type === 'ADD_TRANSACTION') {
-		updateBalance(payload);
-		updateHistory(payload);
-		triggerAccountRender();
-		triggerHistoryRender();
+		updateBalance(payload, 'add');
+		updateHistory(payload, 'add');
 	}
 
 	if (type === 'REVOKE_TRANSACTION') {
-		// reject IF user not found!
+		console.log(payload);
+		// reject IF one of the users IS NOT FOUND!
+		// refund (from), charge (to)
+		// re-render UI
+	}
+
+	//TRIGGER RERENDERS AFTER STATE UPDATES... (vanilla js vs react)
+	triggerAccountRender();
+	triggerFromToSearchRender();
+	triggerHistoryRender();
+};
+
+const updateBalance = (transactionInfo, identifier) => {
+	if (identifier === 'add') {
+		globalState.accountState = globalState.accountState.map((account) => {
+			if (account.id === transactionInfo.from.id) {
+				return {
+					...account,
+					balance: account.balance - transactionInfo.amount,
+				};
+			}
+			if (account.id === transactionInfo.to.id) {
+				return {
+					...account,
+					balance: account.balance + transactionInfo.amount,
+				};
+			}
+			return account;
+		});
+	} else if (identifier === 'revoke') {
+		// revoke logic based on transactionID - INVERT TO-FROM LOGIC...
+	} else {
+		return;
 	}
 };
 
-const updateBalance = (transactionInfo) => {
-	globalState.accountState = globalState.accountState.map((account) => {
-		if (account.id === transactionInfo.from.id) {
-			return { ...account, balance: account.balance - transactionInfo.amount };
-		}
-		if (account.id === transactionInfo.to.id) {
-			return { ...account, balance: account.balance + transactionInfo.amount };
-		}
-		return account;
-	});
-};
+const updateHistory = (transactionInfo, identifier) => {
+	if (identifier === 'add') {
+		// add to transaction state, id of this is prominent (for filtering transaactions)
+		globalState.transactionState = [
+			...globalState.transactionState,
+			transactionInfo,
+		];
+		globalState.historyState = [...globalState.historyState, transactionInfo];
+	} else if (identifier === 'account-creation') {
+		transactionHistory = `${formatName(
+			transactionInfo.name
+		)} created an account with the initial balance of ${formatPrice(
+			transactionInfo.balance
+		)}.`;
+		globalState.historyState = [
+			...globalState.historyState,
+			transactionHistory,
+		];
+	} else if (identifier === 'account-deletion') {
+		transactionHistory = `${formatName(
+			transactionInfo.name
+		)} deleted their account.`;
 
-const updateHistory = (transactionInfo) => {
-	transactionHistory = `${formatName(
-		transactionInfo.from.name
-	)} sent ${formatPrice(transactionInfo.amount)} to ${formatName(
-		transactionInfo.to.name
-	)}`;
-	globalState.historyState = [...globalState.historyState, transactionHistory];
+		globalState.historyState = [
+			...globalState.historyState,
+			transactionHistory,
+		];
+	}
+
+	//final history update.
+
+	console.log(globalState);
 	transactionHistory = '';
 };
 
@@ -141,10 +188,27 @@ const triggerAccountRender = () => {
 const triggerHistoryRender = () => {
 	transactionHistoryList.innerHTML = '';
 
+	//if string, basic li, if transaction object, complex li (dataset.id,  dataset.from, dataset.to)
+
 	globalState.historyState.forEach((history) => {
 		let historyLi = document.createElement('li');
-		historyLi.classList.add = 'transaction-list-item';
-		historyLi.innerText = history;
+		historyLi.classList.add('transaction-list-item');
+
+		if (typeof history === 'string') {
+			historyLi.innerText = history;
+		} else {
+			historyLi.dataset.id = history.transactionId;
+			historyLi.dataset.from = history.from.name;
+			historyLi.dataset.to = history.to.name;
+
+			historyLi.innerHTML = `
+			<button id="remove-transaction-btn">revoke</button>
+			<span>${formatName(history.from.name)} sent ${formatPrice(
+				history.amount
+			)} to ${formatName(history.to.name)}.</span>
+			`;
+		}
+
 		transactionHistoryList.prepend(historyLi);
 	});
 };
@@ -214,7 +278,10 @@ const clearTransactionForm = () => {
 };
 
 const handleTransactionSubmit = () => {
-	setState('ADD_TRANSACTION', transactionInfo);
+	setState('ADD_TRANSACTION', {
+		...transactionInfo,
+		transactionId: generateId(),
+	});
 	clearTransactionForm();
 };
 
@@ -279,7 +346,7 @@ const fetchSearchResults = () => {
 	return li;
 };
 
-const updateTransactionSearch = () => {
+const triggerFromToSearchRender = () => {
 	searchResults.innerHTML = fetchSearchResults();
 };
 
@@ -294,7 +361,7 @@ const displaySearchResults = (identifier) => {
 		searchResults.classList.add('to');
 	}
 
-	updateTransactionSearch();
+	triggerFromToSearchRender();
 	searchAccount.style.display = 'block';
 };
 
@@ -342,17 +409,30 @@ const handleTransactionAmount = (e) => {
 };
 
 const removeAccount = (e) => {
-	// make use of event delegation to remove account
-	console.log('true');
+	// make use of event delegation to remove account - li items are dynamically generated...
 	if (e.target.id === 'remove-account-btn') {
 		const accountToBeRemoved = e.target.parentElement.parentElement.dataset.id;
 		setState('REMOVE_ACCOUNT', accountToBeRemoved);
-
-		//get user id from parent.dataset.id and filter globalState.accountState and re-render!
+		//get user id from parent.dataset.id and filter globalState.accountState and re-render...
 	} else {
 		return;
 	}
 };
 
-// remove account
+const revokeTransaction = (e) => {
+	if (e.target.id === 'remove-transaction-btn') {
+		console.log(e.target.parentElement);
+
+		const parent = e.target.parentElement;
+		parent.classList.add('removed-transaction');
+		e.target.style.display = 'none';
+
+		const transactionId = parent.dataset.id;
+
+		setState('REVOKE_TRANSACTION', transactionId);
+	} else {
+		return;
+	}
+};
+
 // revoke transaction

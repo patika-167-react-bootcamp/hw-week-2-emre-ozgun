@@ -7,6 +7,7 @@
 	--dark-low-opacity: #33325923;
 	--dark-mid-opacity: #3332593b;
 	--dark-mid2-opacity: #3332595e;
+	--clr-danger: #f21f0c6e;
 
 	--text-color: #eee;
 }
@@ -24,6 +25,7 @@ body {
 	background-color: #fff;
 	/* background-color: #222; */
 	font-family: 'Montserrat', sans-serif;
+	color: #262626;
 }
 
 main {
@@ -51,6 +53,18 @@ main > form {
 	-moz-border-radius: var(--radius);
 	-ms-border-radius: var(--radius);
 	-o-border-radius: var(--radius);
+}
+
+section {
+	padding: 2rem;
+	background-color: #fff;
+	margin-bottom: 1rem;
+	box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
+}
+
+.container > section {
+	height: 350px;
+	overflow-y: scroll;
 }
 
 form > input {
@@ -145,13 +159,13 @@ li {
 }
 .account-list > li:hover #remove-account-btn {
 	display: inline-flex;
+	flex-shrink: 0;
 }
 
 #remove-account-btn {
 	display: none;
 	justify-content: center;
 	align-items: center;
-	background-color: #333259;
 	font-size: 9px;
 	height: 13px;
 	width: 13px;
@@ -160,8 +174,11 @@ li {
 	-moz-border-radius: 50%;
 	-ms-border-radius: 50%;
 	-o-border-radius: 50%;
+	background-color: var(--clr-danger);
 	color: #eee;
 	cursor: pointer;
+	padding: 0;
+	letter-spacing: 0;
 }
 
 /* end of account list */
@@ -279,23 +296,63 @@ li {
 	font-size: 14px;
 }
 
+.transaction-list-item.removed-transaction {
+	text-decoration: line-through;
+}
+
 .account-list > li {
 	font-size: 14px;
 }
 
+.account-list > li {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.account-list > li > * {
+	/* display: inline-block; */
+}
+
+/* #remove-transaction-btn {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	padding: 0.75rem;
+	margin: 0;
+	font-size: 9x;
+	height: 13px;
+	width: 13px;
+	letter-spacing: 0;
+	border-radius: 50%;
+	-webkit-border-radius: 50%;
+	-moz-border-radius: 50%;
+	-ms-border-radius: 50%;
+	-o-border-radius: 50%;
+} */
+
+#remove-transaction-btn {
+	display: inline-flex;
+	justify-content: center;
+	align-items: center;
+	font-size: 12px;
+	text-transform: none;
+
+	border-radius: 20px;
+	background-color: var(--clr-danger);
+	color: #eee;
+	cursor: pointer;
+	padding: 0.1rem 0.25rem;
+	letter-spacing: 0;
+	-webkit-border-radius: 20px;
+}
+
+/* similar to remove-account-btn (display on hover...) */
+
+/* .transaction-list > li:hover #remove-transaction-btn {
+	display: inline-flex;
+} */
+
 /* end of transaction list */
-
-section {
-	padding: 2rem;
-	background-color: #fff;
-	margin-bottom: 1rem;
-	box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.1);
-}
-
-.container > section {
-	height: 350px;
-	overflow-y: scroll;
-}
 
 @media only screen and (min-width: 768px) {
 	.container {
@@ -338,12 +395,13 @@ section {
 
 	section > h3 {
 		margin-bottom: 1rem;
-		padding: 0.5rem;
+
 		text-transform: uppercase;
 		position: sticky;
 		top: -1.5rem;
 		background-color: #fff;
 		border-left: 2px solid var(--dark-low-opacity);
+		padding-left: 0.25rem;
 	}
 	section > ul {
 		overflow-y: hidden;
