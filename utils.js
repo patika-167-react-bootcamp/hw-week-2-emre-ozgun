@@ -13,8 +13,6 @@ const formatName = (strName) => {
 	const capitalized = str.map((s) => s.charAt(0).toUpperCase() + s.slice(1));
 
 	return `${capitalized.join(' ')}`;
-
-	return capitalized.join(' ');
 };
 
 const generateId = () => {

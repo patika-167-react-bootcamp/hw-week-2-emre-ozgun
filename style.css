@@ -299,6 +299,9 @@ li {
 .transaction-list-item.removed-transaction {
 	text-decoration: line-through;
 }
+.transaction-list-item.removed-transaction button {
+	display: none;
+}
 
 .account-list > li {
 	font-size: 14px;
