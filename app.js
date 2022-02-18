@@ -559,8 +559,6 @@ const triggerFilteredTransactionsRender = () => {
 		return;
 	}
 
-	console.log(globalState.transactionState);
-
 	if (searchVal) {
 		filteredTransactions = globalState.transactionState.filter(
 			(t) =>
@@ -581,10 +579,6 @@ const triggerFilteredTransactionsRender = () => {
 			t.to.name.toLowerCase().includes(searchVal.toLowerCase())
 		);
 	}
-	console.log(globalState.transactionState);
-
-	// filteredTransactionCounter
-	// filteredTransactionsContainer
 
 	if (filteredTransactions.length < 1) {
 		filteredTransactionsContainer.innerHTML = `
