@@ -2,6 +2,8 @@ const globalState = {
 	accountState: [],
 	historyState: [],
 	transactionState: [],
+	productState: [],
+	cartState: [],
 };
 
 //local account state
@@ -42,7 +44,11 @@ let accountList,
 	transactionFilterOverlay,
 	transactionFilterSearchInput,
 	filteredTransactionsContainer,
-	filteredTransactionCounter;
+	filteredTransactionCounter,
+	productForm,
+	addProductBtn,
+	productList,
+	cartList;
 
 window.addEventListener('DOMContentLoaded', () => {
 	//*account list*
@@ -103,6 +109,18 @@ window.addEventListener('DOMContentLoaded', () => {
 		'keyup',
 		handleTransactionSearchInput
 	);
+
+	// REVISION - III
+
+	productForm = document.querySelector('#product-form');
+	addProductBtn = document.querySelector('#add-product-btn');
+	productList = document.querySelector('#product-list');
+	cartList = document.querySelector('#cart-list');
+
+	productForm.addEventListener('keyup', handleProductChange);
+	addProductBtn.addEventListener('click', handleProductSubmit);
+	productList.addEventListener('click', handleAddToCart);
+	cartList.addEventListener('click', handleRemoveFromCart);
 });
 
 // dispatch func.
@@ -130,9 +148,49 @@ const setState = (type, payload) => {
 		updateHistory(payload, 'add');
 	}
 
+	//REVISION - II
+
 	if (type === 'REVOKE_TRANSACTION') {
 		updateBalance(payload, 'revoke');
 		updateHistory(payload, 'revoke');
+	}
+
+	// REVISION - IIII
+
+	if (type === 'ADD_PRODUCT') {
+		globalState.productState = [...globalState.productState, payload];
+		triggerProductListRender();
+	}
+
+	if (type === 'ADD_TO_CART') {
+		const isItemAlreadyInCart = globalState.cartState.find(
+			(c) => c.productId === payload.productId
+		);
+
+		const maxQuantity = globalState.productState.find(
+			(p) => p.productId === payload.productId
+		).productStockAmount;
+
+		if (isItemAlreadyInCart) {
+			globalState.cartState = globalState.cartState.map((cart) => {
+				if (cart.productId === payload.productId) {
+					return {
+						...cart,
+						quantity:
+							cart.quantity + 1 > maxQuantity ? maxQuantity : cart.quantity + 1,
+					};
+				} else {
+					return cart;
+				}
+			});
+		} else {
+			globalState.cartState = [...globalState.cartState, payload];
+		}
+
+		triggerCartListRender();
+	}
+
+	if (type === 'PLACE_ORDER') {
 	}
 
 	//TRIGGER RERENDERS AFTER STATE UPDATES... (vanilla js vs react)
@@ -141,6 +199,7 @@ const setState = (type, payload) => {
 	triggerHistoryRender();
 };
 
+// account balance state updater.
 const updateBalance = (transactionInfo, identifier) => {
 	if (identifier === 'add') {
 		globalState.accountState = globalState.accountState.map((account) => {
@@ -189,6 +248,7 @@ const updateBalance = (transactionInfo, identifier) => {
 	}
 };
 
+// history state updater.
 const updateHistory = (transactionInfo, identifier) => {
 	if (identifier === 'add') {
 		// add to transaction state, id of this is prominent (for filtering transactions)
@@ -232,6 +292,7 @@ const updateHistory = (transactionInfo, identifier) => {
 	transactionHistory = '';
 };
 
+//responsible for rendering account list.
 const triggerAccountRender = () => {
 	accountList.innerHTML = '';
 
@@ -259,6 +320,7 @@ const triggerAccountRender = () => {
 	);
 };
 
+//responsible for rendering transaction history list.
 const triggerHistoryRender = () => {
 	transactionHistoryList.innerHTML = '';
 
@@ -298,6 +360,7 @@ const triggerHistoryRender = () => {
 	});
 };
 
+// account handlers, employs basic validation
 const handleAccountSubmit = (e) => {
 	e.preventDefault();
 	accountInfo.id = generateId();
@@ -496,7 +559,7 @@ const handleTransactionAmount = (e) => {
 	}
 };
 
-// REVISION - I
+// REVISION - I - account and transaction removal
 
 const handleRemoveAccount = (e) => {
 	// make use of event delegation to remove account (li items are dynamically generated)
@@ -540,8 +603,9 @@ const handleRevokeTransaction = (e) => {
 	}
 };
 
-// REVISION - II
+// REVISION - II - filtering transactions
 
+// filtering globalState.transactionState based on local transactionFilters. Doesn't make use of global state hence locally defined.
 let transactionFilters = {
 	type: 'all',
 	searchInput: '',
@@ -665,4 +729,176 @@ const handleTransactionSearchInput = (e) => {
 	e.preventDefault();
 	transactionFilters.searchInput = e.target.value;
 	triggerFilteredTransactionsRender();
+};
+
+// REVISION - III
+
+//local
+
+let productInfo = {
+	productId: '',
+	productName: '',
+	productStockAmount: 0,
+	productPrice: 0,
+};
+
+let cartItem = {
+	productId: '',
+	quantity: 0,
+};
+
+const triggerProductListRender = () => {
+	productList.innerHTML = ``;
+
+	if (globalState.productState.length < 1) {
+		productList.innerHTML = `<li>No available products...</li>`;
+	} else {
+		let composite = ``;
+
+		globalState.productState.forEach((product) => {
+			li = `
+			<li class='product-list-item' data-product=${product.productId}>
+			<div>
+			<span>(${
+				product.productStockAmount > 0
+					? product.productStockAmount
+					: 'out of stock'
+			})</span>
+			<span>${formatName(product.productName)} -- </span>
+			<span>${formatPrice(product.productPrice)}</span>
+			
+			</div>
+			<div>
+			<button id="add-to-cart-btn" type="button">add</button>
+			</div>
+			</li>
+			`;
+
+			composite += li;
+		});
+		productList.innerHTML = composite;
+	}
+};
+
+const triggerCartListRender = () => {
+	cartList.innerHTML = ``;
+
+	if (globalState.productState.length < 1) {
+		cartList.innerHTML = `<li>Your cart is empty.</li>`;
+	} else {
+		let composite = ``;
+
+		globalState.cartState.forEach((cart) => {
+			const product = globalState.productState.find(
+				(p) => p.productId === cart.productId
+			);
+
+			const subTotal = product.productPrice * cart.quantity;
+			const quantity = cart.quantity;
+
+			li = `
+			<li class='cart-list-item' data-product=${cart.productId}>
+			<div>
+			<span>(${quantity})</span>
+			<span>${formatName(product.productName)} -- </span>
+			<span>Sub Total: ${formatPrice(subTotal)}}</span>
+			</div>
+			<div>
+			<button id="remove-from-cart-btn" type="button">x</button>
+			</div>
+			</li>
+			`;
+
+			composite += li;
+		});
+		cartList.innerHTML = composite;
+	}
+};
+
+const handleProductSubmit = (e) => {
+	e.preventDefault();
+	const finalProduct = { ...productInfo, productId: generateId() };
+	setState('ADD_PRODUCT', finalProduct);
+
+	productInfo = {
+		productId: '',
+		productName: '',
+		productStockAmount: 0,
+		productPrice: 0,
+	};
+	addProductBtn.disabled = true;
+	Array.from(productForm.children).forEach((e) => (e.value = ''));
+
+	return;
+};
+
+//Basic product input validation
+const handleProductChange = (e) => {
+	if (e.target.name === 'product-name') {
+		if (e.target.value !== '') {
+			productInfo.productName = e.target.value;
+		} else {
+			productInfo.productName = '';
+		}
+	} else if (e.target.name === 'product-price') {
+		if (!Number(e.target.value) || !Number(e.target.value) > 0) {
+			e.target.value = '';
+			productInfo.productPrice = '';
+		} else {
+			productInfo.productPrice = Number(e.target.value);
+		}
+	} else if (e.target.name === 'product-quantity') {
+		if (!Number(e.target.value) || !Number(e.target.value) > 0) {
+			e.target.value = '';
+			productInfo.productStockAmount = '';
+		} else if (Math.floor(Number(e.target.value)) !== Number(e.target.value)) {
+			e.target.value = Math.floor(Number(e.target.value));
+		} else {
+			productInfo.productStockAmount = Number(e.target.value);
+		}
+	}
+
+	if (
+		productInfo.productName &&
+		productInfo.productPrice &&
+		productInfo.productStockAmount
+	) {
+		addProductBtn.disabled = false;
+	} else {
+		addProductBtn.disabled = true;
+	}
+};
+
+const handleCheckoutSubmit = (e) => {};
+
+const handleCartChange = () => {};
+
+const handleRemoveFromCart = (e) => {
+	if (e.target.id === 'remove-from-cart-btn') {
+		globalState.cartState = globalState.cartState.filter(
+			(c) =>
+				c.productId !== e.target.parentElement.parentElement.dataset.product
+		);
+		triggerCartListRender();
+	} else {
+		return;
+	}
+};
+
+const handleAddToCart = (e) => {
+	if (e.target.id === 'add-to-cart-btn') {
+		const productId = e.target.parentElement.parentElement.dataset.product;
+		cartItem = {
+			productId,
+			quantity: 1,
+		};
+
+		setState('ADD_TO_CART', cartItem);
+		cartItem = {
+			productId: '',
+			quantity: 0,
+		};
+	} else {
+		return;
+	}
 };

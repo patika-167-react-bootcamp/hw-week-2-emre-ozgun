@@ -64,6 +64,7 @@
 				<ul class="transaction-list">
 					<li>No recent transactions...</li>
 				</ul>
+				<!-- REVISION - III -->
 				<form class="filter-transaction-form">
 					<div class="form-control">
 						<input
@@ -99,6 +100,33 @@
 				</form>
 				<button type="button" id="open-transaction-btn">filter</button>
 				<div id="transaction-filter-overlay"></div>
+			</section>
+
+			<!-- REVISION - III -->
+
+			<form id="product-form">
+				<input type="text" name="product-name" placeholder="Product Name..." />
+				<input type="text" name="product-price" placeholder="Price..." />
+				<input type="text" name="product-quantity" placeholder="Quantity..." />
+
+				<button type="submit" disabled id="add-product-btn">Add Product</button>
+			</form>
+			<form id="cart-form">
+				<button id="select-user-cart">Select Payer</button>
+				<button type="submit" id="place-order" disabled>Place Order</button>
+			</form>
+
+			<section id="product-section">
+				<h3>Product Catalogue</h3>
+				<ul id="product-list">
+					<li>No available products...</li>
+				</ul>
+			</section>
+			<section id="cart-section">
+				<h3>Shopping Cart</h3>
+				<ul id="cart-list">
+					<li>Shopping cart is currently empty...</li>
+				</ul>
 			</section>
 		</main>
 		<script src="./app.js"></script>
