@@ -48,7 +48,13 @@ let accountList,
 	productForm,
 	addProductBtn,
 	productList,
-	cartList;
+	cartList,
+	cartTotal,
+	openPayerList,
+	closePayerList,
+	placeOrderBtn,
+	payerList,
+	payerListUl;
 
 window.addEventListener('DOMContentLoaded', () => {
 	//*account list*
@@ -116,11 +122,26 @@ window.addEventListener('DOMContentLoaded', () => {
 	addProductBtn = document.querySelector('#add-product-btn');
 	productList = document.querySelector('#product-list');
 	cartList = document.querySelector('#cart-list');
+	cartTotal = document.querySelector('#cart-total');
+	openPayerList = document.querySelector('#select-user-cart');
+	placeOrderBtn = document.querySelector('#place-order');
+	payerList = document.querySelector('#payer-list');
+	closePayerList = document.querySelector('#close-payer-list');
+	payerListUl = document.querySelector('.payer-list-ul');
 
 	productForm.addEventListener('keyup', handleProductChange);
 	addProductBtn.addEventListener('click', handleProductSubmit);
 	productList.addEventListener('click', handleAddToCart);
 	cartList.addEventListener('click', handleRemoveFromCart);
+
+	openPayerList.addEventListener(
+		'click',
+		() => (payerList.classList = 'active')
+	);
+	closePayerList.addEventListener('click', () => (payerList.classList = ''));
+
+	payerList.addEventListener('click', handleSelectPayer);
+	placeOrderBtn.addEventListener('click', handlePaymentSubmit);
 });
 
 // dispatch func.
@@ -129,6 +150,7 @@ const setState = (type, payload) => {
 		globalState.accountState = [...globalState.accountState, payload];
 
 		updateHistory(payload, 'account-creation');
+		triggerPayerListRender();
 	}
 
 	if (type === 'REMOVE_ACCOUNT') {
@@ -141,6 +163,7 @@ const setState = (type, payload) => {
 		);
 
 		updateHistory(accountToBeRemoved, 'account-deletion');
+		triggerPayerListRender();
 	}
 
 	if (type === 'ADD_TRANSACTION') {
@@ -188,9 +211,54 @@ const setState = (type, payload) => {
 		}
 
 		triggerCartListRender();
+		checkIsPayable();
 	}
 
 	if (type === 'PLACE_ORDER') {
+		console.log({ paymentState });
+
+		const uId = payload.payerId;
+		const orderTotal = payload.total;
+
+		const user = globalState.accountState.find((u) => u.id === uId);
+
+		if (user.balance < orderTotal) {
+			alert('Insufficient funds.');
+			return;
+		}
+
+		//update user balance after purchase
+		globalState.accountState = globalState.accountState.map((acc) => {
+			if (acc.id === uId) {
+				return {
+					...acc,
+					balance: acc.balance - orderTotal,
+				};
+			} else {
+				return acc;
+			}
+		});
+
+		//update quantities after purchase
+		globalState.productState = globalState.productState.map((p) => {
+			const wasProductInCart = globalState.cartState.find(
+				(c) => c.productId === p.productId
+			);
+			if (wasProductInCart) {
+				return {
+					...p,
+					productStockAmount: p.productStockAmount - wasProductInCart.quantity,
+				};
+			} else {
+				return p;
+			}
+		});
+		//empty cart and gtfo
+		globalState.cartState = [];
+		triggerCartListRender();
+		triggerProductListRender();
+		triggerPayerListRender();
+		updateHistory({ name: user.name, total: orderTotal }, 'order-complete');
 	}
 
 	//TRIGGER RERENDERS AFTER STATE UPDATES... (vanilla js vs react)
@@ -288,6 +356,14 @@ const updateHistory = (transactionInfo, identifier) => {
 				return t;
 			}
 		});
+	} else if (identifier === 'order-complete') {
+		transactionHistory = `${formatName(
+			transactionInfo.name
+		)} placed an order [${formatPrice(transactionInfo.total)}]`;
+		globalState.historyState = [
+			...globalState.historyState,
+			transactionHistory,
+		];
 	}
 	transactionHistory = '';
 };
@@ -769,7 +845,9 @@ const triggerProductListRender = () => {
 			
 			</div>
 			<div>
-			<button id="add-to-cart-btn" type="button">add</button>
+			<button id="add-to-cart-btn" ${
+				product.productStockAmount < 1 && 'disabled'
+			} type="button">add</button>
 			</div>
 			</li>
 			`;
@@ -780,10 +858,43 @@ const triggerProductListRender = () => {
 	}
 };
 
+const triggerPayerListRender = () => {
+	payerListUl.innerHTML = '';
+	if (globalState.accountState.length < 1) {
+		payerListUl.innerHTML = `<li>No active users to pay...</li>`;
+		openPayerList.textContent = 'SELECT USER';
+		placeOrderBtn.disabled = true;
+	} else {
+		let composite = ``;
+		globalState.accountState.forEach((account) => {
+			li = `
+			<li class='payer-list-item' data-account="${account.id}">
+				${formatName(account.name)}
+			</li>
+			`;
+			composite += li;
+		});
+		payerListUl.innerHTML = composite;
+	}
+};
+
+const renderCartTotal = () => {
+	let total = 0;
+
+	globalState.cartState.forEach((c) => {
+		const p = globalState.productState.find((p) => p.productPrice);
+		total += p.productPrice * c.quantity;
+	});
+	paymentState.total = total;
+
+	cartTotal.innerText = formatPrice(total);
+};
+
 const triggerCartListRender = () => {
+	renderCartTotal();
 	cartList.innerHTML = ``;
 
-	if (globalState.productState.length < 1) {
+	if (globalState.cartState.length < 1) {
 		cartList.innerHTML = `<li>Your cart is empty.</li>`;
 	} else {
 		let composite = ``;
@@ -869,10 +980,6 @@ const handleProductChange = (e) => {
 	}
 };
 
-const handleCheckoutSubmit = (e) => {};
-
-const handleCartChange = () => {};
-
 const handleRemoveFromCart = (e) => {
 	if (e.target.id === 'remove-from-cart-btn') {
 		globalState.cartState = globalState.cartState.filter(
@@ -880,6 +987,7 @@ const handleRemoveFromCart = (e) => {
 				c.productId !== e.target.parentElement.parentElement.dataset.product
 		);
 		triggerCartListRender();
+		checkIsPayable();
 	} else {
 		return;
 	}
@@ -901,4 +1009,40 @@ const handleAddToCart = (e) => {
 	} else {
 		return;
 	}
+};
+
+let paymentState = {
+	payerId: '',
+	total: 0,
+};
+
+const checkIsPayable = () => {
+	if (paymentState.payerId && globalState.cartState.length > 0) {
+		placeOrderBtn.disabled = false;
+	} else {
+		placeOrderBtn.disabled = true;
+	}
+};
+
+const handleSelectPayer = (e) => {
+	if (e.target.dataset.account) {
+		const payerId = e.target.dataset.account;
+		paymentState = { ...paymentState, payerId };
+		payerList.classList = '';
+		openPayerList.textContent = formatName(e.target.textContent);
+		checkIsPayable();
+	} else {
+		return;
+	}
+};
+
+const handlePaymentSubmit = (e) => {
+	e.preventDefault();
+	console.log(paymentState);
+	setState('PLACE_ORDER', paymentState);
+	paymentState = {
+		payerId: '',
+		total: 0,
+	};
+	checkIsPayable();
 };

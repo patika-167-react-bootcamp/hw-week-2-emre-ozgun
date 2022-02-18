@@ -112,8 +112,21 @@
 				<button type="submit" disabled id="add-product-btn">Add Product</button>
 			</form>
 			<form id="cart-form">
-				<button id="select-user-cart">Select Payer</button>
+				<button id="select-user-cart" type="button">Select Payer</button>
+				<button class="cart-total-btn" type="button" disabled>
+					Total: <span id="cart-total">$0</span>
+				</button>
 				<button type="submit" id="place-order" disabled>Place Order</button>
+
+				<ul id="payer-list">
+					<div class="payer-list-title">
+						<h3>Select Payer</h3>
+						<button id="close-payer-list" type="button">X</button>
+					</div>
+					<ul class="payer-list-ul">
+						<li class="payer-list-item">No active users found...</li>
+					</ul>
+				</ul>
 			</form>
 
 			<section id="product-section">
