@@ -75,15 +75,26 @@
 						<button type="button" id="close-transaction-btn">X</button>
 					</div>
 					<div id="filter-transaction-type">
-						<button type="button" id="filter-type-from">from</button>
-						<button type="button" id="filter-type-to">to</button>
-						<button type="button" id="filter-type-any" class="active">
+						<button type="button" id="filter-type-from" class="t-type">
+							from
+						</button>
+						<button type="button" id="filter-type-to" class="t-type">to</button>
+						<button type="button" id="filter-type-any" class="t-type active">
 							all
 						</button>
 					</div>
+					<div class="transaction-filter-container">
+						<h4>Results <span id="f-count">(0)</span></h4>
+						<ul id="filter-transaction-results">
+							<li>hey hey</li>
+							<li>hey hey</li>
+							<li>hey hey</li>
+							<li>hey hey</li>
+						</ul>
+					</div>
 					<div class="filter-transaction-cta">
-						<button type="button">reset</button>
-						<button type="button">done</button>
+						<button type="button" id="f-t-reset">reset</button>
+						<button type="button" id="f-t-done">done</button>
 					</div>
 				</form>
 				<button type="button" id="open-transaction-btn">filter</button>

@@ -39,7 +39,10 @@ let accountList,
 	openTransactionFilterBtn,
 	closeTransactionFilterBtn,
 	filterTransactionForm,
-	transactionFilterOverlay;
+	transactionFilterOverlay,
+	transactionFilterSearchInput,
+	filteredTransactionsContainer,
+	filteredTransactionCounter;
 
 window.addEventListener('DOMContentLoaded', () => {
 	//*account list*
@@ -47,6 +50,8 @@ window.addEventListener('DOMContentLoaded', () => {
 	accountList = document.querySelector('.account-list');
 	accountForm = document.querySelector('.add-user');
 	addAccountBtn = document.querySelector('.add-user').querySelector('button');
+
+	accountForm.firstElementChild.focus();
 
 	accountForm.addEventListener('submit', handleAccountSubmit);
 	accountForm.addEventListener('keyup', handleAccountChange);
@@ -80,11 +85,23 @@ window.addEventListener('DOMContentLoaded', () => {
 	transactionFilterOverlay = document.querySelector(
 		'#transaction-filter-overlay'
 	);
+	transactionFilterSearchInput = document.querySelector(
+		'#filter-transaction-input'
+	);
+	filteredTransactionsContainer = document.querySelector(
+		'#filter-transaction-results'
+	);
+	filteredTransactionCounter = document.querySelector('#f-count');
 
 	openTransactionFilterBtn.addEventListener('click', openTransactionFilterForm);
 	closeTransactionFilterBtn.addEventListener(
 		'click',
 		closeTransactionFilterForm
+	);
+	filterTransactionForm.addEventListener('click', handleTransactionFilter);
+	transactionFilterSearchInput.addEventListener(
+		'keyup',
+		handleTransactionSearchInput
 	);
 });
 
@@ -352,6 +369,7 @@ const handleTransactionSubmit = () => {
 	const t = { ...transactionInfo, transactionId };
 
 	setState('ADD_TRANSACTION', t);
+	triggerFilteredTransactionsRender();
 	clearTransactionForm();
 };
 
@@ -524,15 +542,130 @@ const handleRevokeTransaction = (e) => {
 
 // REVISION - II
 
+let transactionFilters = {
+	type: 'all',
+	searchInput: '',
+};
+
+const triggerFilteredTransactionsRender = () => {
+	const searchVal = transactionFilters.searchInput;
+	let filteredTransactions;
+	filteredTransactionsContainer.innerHTML = ``;
+
+	if (globalState.transactionState.length < 1) {
+		filteredTransactionsContainer.innerHTML = `
+		<li>Transaction history empty...</li>
+		`;
+		return;
+	}
+
+	console.log(globalState.transactionState);
+
+	if (searchVal) {
+		filteredTransactions = globalState.transactionState.filter(
+			(t) =>
+				t.from.name.toLowerCase().includes(searchVal.toLowerCase()) ||
+				t.to.name.toLowerCase().includes(searchVal.toLowerCase())
+		);
+	} else {
+		filteredTransactions = globalState.transactionState;
+	}
+
+	if (transactionFilters.type === 'from') {
+		filteredTransactions = filteredTransactions.filter((t) =>
+			t.from.name.toLowerCase().includes(searchVal.toLowerCase())
+		);
+	}
+	if (transactionFilters.type === 'to') {
+		filteredTransactions = filteredTransactions.filter((t) =>
+			t.to.name.toLowerCase().includes(searchVal.toLowerCase())
+		);
+	}
+	console.log(globalState.transactionState);
+
+	// filteredTransactionCounter
+	// filteredTransactionsContainer
+
+	if (filteredTransactions.length < 1) {
+		filteredTransactionsContainer.innerHTML = `
+		<li>No transaction matched your search criteria.</li>
+		`;
+		return;
+	} else {
+		let composite = ``;
+
+		filteredTransactions.forEach((t) => {
+			const li = `<li class="${t.status && 'revoked-history'}">${
+				t.from.name
+			} sent ${t.amount} to ${t.to.name}</li>`;
+			composite += li;
+		});
+		filteredTransactionsContainer.innerHTML = composite;
+	}
+};
+
 const openTransactionFilterForm = (e) => {
-	e.preventDefault();
 	filterTransactionForm.classList.add('active');
 	transactionFilterOverlay.classList.add('active');
 	document.querySelector('#filter-transaction-input').focus();
+	triggerFilteredTransactionsRender();
 };
 
 const closeTransactionFilterForm = (e) => {
-	e.preventDefault();
 	filterTransactionForm.classList.remove('active');
 	transactionFilterOverlay.classList.remove('active');
+};
+
+const handleTransactionFilter = (e) => {
+	if (e.target.classList.contains('t-type')) {
+		const typeBtns = document
+			.querySelector('#filter-transaction-type')
+			.querySelectorAll('button');
+		typeBtns.forEach((btn) => {
+			if (btn.id === e.target.id) {
+				btn.classList.add('active');
+			} else {
+				btn.classList.remove('active');
+			}
+			transactionFilters = {
+				...transactionFilters,
+				type: e.target.innerText,
+			};
+		});
+	}
+
+	if (e.target.id === 'f-t-done') {
+		closeTransactionFilterForm();
+		return;
+	}
+	if (e.target.id === 'f-t-reset') {
+		transactionFilters = {
+			type: 'all',
+			searchInput: '',
+		};
+		transactionFilterSearchInput.value = '';
+		const typeBtns = document
+			.querySelector('#filter-transaction-type')
+			.querySelectorAll('button');
+		typeBtns.forEach((btn) => {
+			if (btn.id === 'filter-type-any') {
+				btn.classList.add('active');
+			} else {
+				btn.classList.remove('active');
+			}
+			transactionFilters = {
+				...transactionFilters,
+				type: e.target.innerText,
+			};
+		});
+		document.querySelector('#filter-transaction-input').focus();
+	}
+
+	triggerFilteredTransactionsRender();
+};
+
+const handleTransactionSearchInput = (e) => {
+	e.preventDefault();
+	transactionFilters.searchInput = e.target.value;
+	triggerFilteredTransactionsRender();
 };
