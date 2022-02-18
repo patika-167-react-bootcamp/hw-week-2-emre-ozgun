@@ -64,6 +64,30 @@
 				<ul class="transaction-list">
 					<li>No recent transactions...</li>
 				</ul>
+				<form class="filter-transaction-form">
+					<div class="form-control">
+						<input
+							type="text"
+							id="filter-transaction-input"
+							placeholder="Filter by name..."
+						/>
+
+						<button type="button" id="close-transaction-btn">X</button>
+					</div>
+					<div id="filter-transaction-type">
+						<button type="button" id="filter-type-from">from</button>
+						<button type="button" id="filter-type-to">to</button>
+						<button type="button" id="filter-type-any" class="active">
+							all
+						</button>
+					</div>
+					<div class="filter-transaction-cta">
+						<button type="button">reset</button>
+						<button type="button">done</button>
+					</div>
+				</form>
+				<button type="button" id="open-transaction-btn">filter</button>
+				<div id="transaction-filter-overlay"></div>
 			</section>
 		</main>
 		<script src="./app.js"></script>

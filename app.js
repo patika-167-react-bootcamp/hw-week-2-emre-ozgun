@@ -35,7 +35,11 @@ let accountList,
 	resultFrom,
 	resultTo,
 	searchAccount,
-	searchResults;
+	searchResults,
+	openTransactionFilterBtn,
+	closeTransactionFilterBtn,
+	filterTransactionForm,
+	transactionFilterOverlay;
 
 window.addEventListener('DOMContentLoaded', () => {
 	//*account list*
@@ -67,6 +71,21 @@ window.addEventListener('DOMContentLoaded', () => {
 	// REVISION - I
 	transactionHistoryList.addEventListener('click', handleRevokeTransaction);
 	accountList.addEventListener('click', handleRemoveAccount);
+
+	// REVISION - II
+
+	openTransactionFilterBtn = document.querySelector('#open-transaction-btn');
+	closeTransactionFilterBtn = document.querySelector('#close-transaction-btn');
+	filterTransactionForm = document.querySelector('.filter-transaction-form');
+	transactionFilterOverlay = document.querySelector(
+		'#transaction-filter-overlay'
+	);
+
+	openTransactionFilterBtn.addEventListener('click', openTransactionFilterForm);
+	closeTransactionFilterBtn.addEventListener(
+		'click',
+		closeTransactionFilterForm
+	);
 });
 
 // dispatch func.
@@ -131,8 +150,6 @@ const updateBalance = (transactionInfo, identifier) => {
 		const revokeTo = transactionToBeRevoked.to.id;
 		const amountToBeRevoked = transactionToBeRevoked.amount;
 
-		console.log({ revokeFrom, revokeTo, amountToBeRevoked });
-
 		globalState.accountState = globalState.accountState.map((acc) => {
 			if (acc.id === revokeFrom) {
 				return {
@@ -149,8 +166,6 @@ const updateBalance = (transactionInfo, identifier) => {
 			}
 		});
 
-		console.log(globalState);
-
 		return;
 	} else {
 		return;
@@ -159,7 +174,7 @@ const updateBalance = (transactionInfo, identifier) => {
 
 const updateHistory = (transactionInfo, identifier) => {
 	if (identifier === 'add') {
-		// add to transaction state, id of this is prominent (for filtering transaactions)
+		// add to transaction state, id of this is prominent (for filtering transactions)
 		globalState.transactionState = [
 			...globalState.transactionState,
 			transactionInfo,
@@ -191,15 +206,12 @@ const updateHistory = (transactionInfo, identifier) => {
 
 		globalState.transactionState = globalState.transactionState.map((t) => {
 			if (t.transactionId === transactionRevoked.transactionId) {
-				console.log(true);
 				return { ...t, status: 'revoked' };
 			} else {
 				return t;
 			}
 		});
 	}
-
-	// console.log(globalState);
 	transactionHistory = '';
 };
 
@@ -220,6 +232,11 @@ const triggerAccountRender = () => {
 		return li;
 	};
 
+	if (globalState.accountState.length < 1) {
+		accountList.innerHTML = `<li>No active accounts...</li>`;
+		return;
+	}
+
 	globalState.accountState.forEach(({ id, name, balance }) =>
 		accountList.append(generateAccountDOM(id, name, balance))
 	);
@@ -234,7 +251,6 @@ const triggerHistoryRender = () => {
 	const revokedIds = globalState.transactionState
 		.filter((t) => t.status === 'revoked')
 		.map((t) => t.transactionId);
-	console.log(revokedIds);
 
 	globalState.historyState.forEach((history) => {
 		let historyLi = document.createElement('li');
@@ -475,29 +491,27 @@ const handleRemoveAccount = (e) => {
 	}
 };
 
-const findUser = (from, to) => {
-	if (from === to) return true;
-
-	const isUser = globalState.accountState.some(
-		(a) => a.id === from && a.id === to
+// check for deleted accounts...
+const canRevokeTransaction = (transactionId) => {
+	const { from, to } = globalState.transactionState.find(
+		(t) => t.transactionId === transactionId
 	);
 
-	console.log(isUser);
+	if (from.id === to.id) return true;
 
-	return isUser;
+	const isUser = globalState.accountState.filter(
+		(acc) => acc.id === from.id || acc.id === to.id
+	);
+
+	return isUser.length < 2 ? false : true;
 };
 
 const handleRevokeTransaction = (e) => {
 	if (e.target.id === 'remove-transaction-btn') {
-		// console.log(e.target.parentElement);
-
 		const parent = e.target.parentElement;
-		// parent.classList.add('removed-transaction');
-		// e.target.style.display = 'none';
-
 		const transactionId = parent.dataset.id;
 
-		if (!findUser(parent.dataset.from, parent.dataset.to)) {
+		if (!canRevokeTransaction(transactionId)) {
 			alert('Cannot revoke transaction, one of the accounts could be deleted.');
 			return;
 		} else {
@@ -508,4 +522,17 @@ const handleRevokeTransaction = (e) => {
 	}
 };
 
-// revoke transaction
+// REVISION - II
+
+const openTransactionFilterForm = (e) => {
+	e.preventDefault();
+	filterTransactionForm.classList.add('active');
+	transactionFilterOverlay.classList.add('active');
+	document.querySelector('#filter-transaction-input').focus();
+};
+
+const closeTransactionFilterForm = (e) => {
+	e.preventDefault();
+	filterTransactionForm.classList.remove('active');
+	transactionFilterOverlay.classList.remove('active');
+};
