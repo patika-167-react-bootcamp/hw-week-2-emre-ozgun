@@ -556,6 +556,7 @@ const triggerFilteredTransactionsRender = () => {
 		filteredTransactionsContainer.innerHTML = `
 		<li>Transaction history empty...</li>
 		`;
+		filteredTransactionCounter.innerText = '(0)';
 		return;
 	}
 
@@ -584,6 +585,7 @@ const triggerFilteredTransactionsRender = () => {
 		filteredTransactionsContainer.innerHTML = `
 		<li>No transaction matched your search criteria.</li>
 		`;
+		filteredTransactionCounter.innerText = '(0)';
 		return;
 	} else {
 		let composite = ``;
@@ -594,6 +596,7 @@ const triggerFilteredTransactionsRender = () => {
 			} sent ${t.amount} to ${t.to.name}</li>`;
 			composite += li;
 		});
+		filteredTransactionCounter.innerText = `(${filteredTransactions.length})`;
 		filteredTransactionsContainer.innerHTML = composite;
 	}
 };
